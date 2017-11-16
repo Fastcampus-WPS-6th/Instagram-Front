@@ -19,8 +19,9 @@ function getPost() {
   })
   .done(function(data) {
     console.log('Done!');
+    console.log(data);
     for (var i = 0; i < data.length; i++) {
-      $('#post-container').prepend('<img width="100%" src="http://localhost:8000' + data[i].photo + '">')
+      $('#post-container').prepend('<img src="' + data[i].photo + '" style="max-width: 100%;">')
     }
     
   })
