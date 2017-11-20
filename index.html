@@ -15,6 +15,7 @@
   <button onclick="getPost()">포스트 가져오자</button>
   <div id="post-container"></div>
   <script>
+  var token;
   /* Facebook */
   // Load the SDK asynchronously
   (function(d, s, id) {
@@ -44,35 +45,37 @@
         // 만약 사용자가 페이스북에 로그인 했으며
         // app도 승인한 상태일 경우
         // axios (HTTP library)
-        console.log(response);
-        
-        // response의 내용을 사용해서
-        // localhost:8000/api/member/facebook-login/ URL에 POST요청하기
-        // jQuery사용 ($.ajax)
-        $.ajax({
-          method: 'POST',
-          url: 'http://localhost:8000/api/member/facebook-login/',
-          data: {
-            access_token: response.authResponse.accessToken,
-            facebook_user_id: response.authResponse.userID,
-          }
-        })
-        .done(function (data) {
-          console.log('DRF FacebookLogin API Success');
-          console.log(data);
-        })
-        .fail(function (data) {
-          console.log('DRF FacebookLogin API Fail');
-          console.log(data);
-        });
+        apiFbLogin(response);
       } else {
         // 페이스북에 로그인 하지 않았거나 app을 승인하지 않은 경우
         // 로그인을 실행
         FB.login(function (response) {
           // 실행 이후
-          console.log(response);
-        });
+          apiFbLogin(response);
+        }, {scope: 'public_profile,email,user_friends'});
       }
+    });
+  }
+  
+  function apiFbLogin(response) {
+    // response의 내용을 사용해서
+    // localhost:8000/api/member/facebook-login/ URL에 POST요청하기
+    // jQuery사용 ($.ajax)
+    $.ajax({
+      method: 'POST',
+      url: 'http://localhost:8000/api/member/facebook-login/',
+      data: {
+        access_token: response.authResponse.accessToken,
+        facebook_user_id: response.authResponse.userID,
+      }
+    })
+    .done(function (data) {
+      console.log('DRF FacebookLogin API Success');
+      token = data.token;
+    })
+    .fail(function (data) {
+      console.log('DRF FacebookLogin API Fail');
+      console.log(data);
     });
   }
   
@@ -80,6 +83,9 @@
     $.ajax({
       method: 'GET',
       url: 'http://localhost:8000/api/post/',
+      headers: {
+        'Authorization': 'Token ' + token,
+      }
     })
     .done(function(data) {
       console.log('Done!');
